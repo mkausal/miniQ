@@ -1,0 +1,54 @@
+MiniQ is a broker that allows multiple producers to write to it, and
+multiple consumers to read from it. It runs on a single server.
+Whenever a producer writes to MiniQ, a message ID is generated
+and returned as confirmation. Whenever a consumer polls MiniQ for
+new messages, it gets those messages which are NOT processed by
+any other consumer that may be concurrently accessing MiniQ.
+
+When a consumer gets a set of messages, it will notify
+MiniQ that it has processed each message (individually). This
+deletes that message from the MiniQ database. If a message is
+received by a consumer, but NOT marked as processed within a
+configurable amount of time, the message then becomes available
+to any consumer requesting again.
+
+Implementation is done in Python using MongoDB as data store.
+Wanted a NoSQL database, so there will be no dependency on schema,
+which is very basic at the current level. Any new changes to the
+schema can be easily incorporated without the need to update
+tables, as is the case with relational databases.
+
+
+The time can be configured from turn_around_time in MiniQ object
+
+
+Potential API end points:
+1. push_message(params):
+    This API pushes new message to the broker
+
+    Args:
+        params (dict): A dict with 'msg' indicating message text. Chosen dict, as it will be extensible without
+        changing API parameters multiple times, for any future requirements
+
+    Method Type:
+        POST
+
+    Returns:
+        dict:a dict contain success and data containing the success or failure message
+
+2. read_messages():
+    This API reads unread and unprocessed messages from the broker
+
+    Args:
+        No Args, as the requirement is to read all available messages at any time. If required, can be modified accordingly
+
+    Method Type:
+        GET
+
+    Returns:
+        dict:a dict contain success (always True) and data containing all the messages
+
+
+The current implementation is very basic but for larger scale, the MongoDB can be sharded for faster database operations.
+As there is no concurrency involved here, Python can very well scale. However, if the requirements are such,
+we can perhaps using something like golang for robustness and scalability.
